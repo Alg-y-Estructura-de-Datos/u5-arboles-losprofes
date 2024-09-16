@@ -131,89 +131,153 @@ void ArbolBinario<T>::remove(T data)
 {
   root = remove(data, root);
 }
-
+//
+//template <class T>
+//NodoArbol<T> *ArbolBinario<T>::remove(T data, NodoArbol<T> *r)
+//{
+//  NodoArbol<T> *aux;
+//
+//  if (r == nullptr)
+//  {
+//    throw 404;
+//  }
+//
+//  if (r->getData() == data)
+//  {
+//
+//    if (r->getLeft() == nullptr && r->getRight() == nullptr)
+//    {
+//      delete r;
+//      return nullptr;
+//    }
+//    else if (r->getLeft() != nullptr && r->getRight() == nullptr)
+//    {
+//      aux = r->getLeft();
+//      delete r;
+//      return aux;
+//    }
+//    else if (r->getLeft() == nullptr && r->getRight() != nullptr)
+//    {
+//      aux = r->getRight();
+//      delete r;
+//      return aux;
+//    }
+//    else if (r->getLeft() != nullptr && r->getRight() != nullptr)
+//    {
+//
+//      if (r->getLeft()->getRight() != nullptr)
+//      {
+//        // Aca tenemos que buscar el valor maximo
+//        bool found;
+//        aux = findMaxAndRemove(r->getLeft(), &found);
+//        aux->setRight(r->getRight());
+//        aux->setLeft(r->getLeft());
+//      }
+//      else
+//      {
+//        aux = r->getLeft();
+//        r->getLeft()->setRight(r->getRight());
+//      }
+//      delete r;
+//      return aux;
+//    }
+//  }
+//  else if (r->getData() > data)
+//  {
+//    r->setLeft(remove(data, r->getLeft()));
+//  }
+//  else
+//  {
+//    r->setRight(remove(data, r->getRight()));
+//  }
+//
+//  return r;
+//}
 template <class T>
 NodoArbol<T> *ArbolBinario<T>::remove(T data, NodoArbol<T> *r)
 {
-  NodoArbol<T> *aux;
-
-  if (r == nullptr)
-  {
-    throw 404;
-  }
-
-  if (r->getData() == data)
-  {
-
-    if (r->getLeft() == nullptr && r->getRight() == nullptr)
+    if (r == nullptr)
     {
-      delete r;
-      return nullptr;
+        throw 404;  // Si el nodo es nulo, lanzamos excepción de "no encontrado"
     }
-    else if (r->getLeft() != nullptr && r->getRight() == nullptr)
-    {
-      aux = r->getLeft();
-      delete r;
-      return aux;
-    }
-    else if (r->getLeft() == nullptr && r->getRight() != nullptr)
-    {
-      aux = r->getRight();
-      delete r;
-      return aux;
-    }
-    else if (r->getLeft() != nullptr && r->getRight() != nullptr)
-    {
 
-      if (r->getLeft()->getRight() != nullptr)
-      {
-        // Aca tenemos que buscar el valor maximo
-        bool found;
-        aux = findMaxAndRemove(r->getLeft(), &found);
-        aux->setRight(r->getRight());
-        aux->setLeft(r->getLeft());
-      }
-      else
-      {
-        aux = r->getLeft();
-        r->getLeft()->setRight(r->getRight());
-      }
-      delete r;
-      return aux;
+    if (data < r->getData())
+    {
+        // Si el valor a eliminar es menor, buscamos en el subárbol izquierdo
+        r->setLeft(remove(data, r->getLeft()));
     }
-  }
-  else if (r->getData() > data)
-  {
-    r->setLeft(remove(data, r->getLeft()));
-  }
-  else
-  {
-    r->setRight(remove(data, r->getRight()));
-  }
-
-  return r;
+    else if (data > r->getData())
+    {
+        // Si el valor a eliminar es mayor, buscamos en el subárbol derecho
+        r->setRight(remove(data, r->getRight()));
+    }
+    else
+    {
+        // Si encontramos el nodo a eliminar
+        if (r->getLeft() == nullptr && r->getRight() == nullptr)
+        {
+            // Caso 1: El nodo es una hoja (sin hijos)
+            delete r;
+            return nullptr;
+        }
+        else if (r->getLeft() == nullptr)
+        {
+            // Caso 2: El nodo tiene solo hijo derecho
+            NodoArbol<T> *temp = r->getRight();
+            delete r;
+            return temp;
+        }
+        else if (r->getRight() == nullptr)
+        {
+            // Caso 3: El nodo tiene solo hijo izquierdo
+            NodoArbol<T> *temp = r->getLeft();
+            delete r;
+            return temp;
+        }
+        else
+        {
+            // Caso 4: El nodo tiene dos hijos
+            NodoArbol<T> *temp = findMaxAndRemove(r->getLeft(), nullptr);  // Buscamos el máximo en el subárbol izquierdo
+            r->setData(temp->getData());  // Reemplazamos los datos del nodo actual
+            r->setLeft(remove(temp->getData(), r->getLeft()));  // Eliminamos el nodo que contenía el mayor valor
+        }
+    }
+    return r;
 }
-
+//
+//template <class T>
+//NodoArbol<T> *ArbolBinario<T>::findMaxAndRemove(NodoArbol<T> *r, bool *found)
+//{
+//  NodoArbol<T> ret;
+//  *found = false;
+//
+//  if (r->getRight() == nullptr)
+//  {
+//    *found = true;
+//    return r;
+//  }
+//
+//  ret = findMaxAndRemove(r->getRight(), found);
+//  if (*found)
+//  {
+//    r->setRight(ret);
+//    *found = false;
+//  }
+//
+//  return ret;
+//}
 template <class T>
 NodoArbol<T> *ArbolBinario<T>::findMaxAndRemove(NodoArbol<T> *r, bool *found)
 {
-  NodoArbol<T> ret;
-  *found = false;
-
-  if (r->getRight() == nullptr)
-  {
-    *found = true;
+    if (r->getRight() == nullptr)
+    {
+        // Si no tiene subárbol derecho, este es el máximo
+        NodoArbol<T> *maxNode = r;
+        r = r->getLeft();  // Actualizamos el puntero para el padre del nodo máximo
+        return maxNode;
+    }
+    r->setRight(findMaxAndRemove(r->getRight(), found));
     return r;
-  }
-
-  ret = findMaxAndRemove(r->getRight(), found);
-  if (*found)
-  {
-    r->setRight(ret);
-    *found = false;
-  }
-
-  return ret;
 }
 
 /**
